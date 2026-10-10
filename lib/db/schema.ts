@@ -123,7 +123,7 @@ export const insertTaskSchema = z.object({
   selectedAgent: z.enum(['claude', 'codex', 'copilot', 'cursor', 'gemini', 'opencode']).default('claude'),
   selectedModel: z.string().optional(),
   installDependencies: z.boolean().default(false),
-  maxDuration: z.number().default(parseInt(process.env.MAX_SANDBOX_DURATION || '300', 10)),
+  maxDuration: z.number().min(1, 'maxDuration must be at least 1 minute').max(480, 'maxDuration cannot exceed 480 minutes').default(parseInt(process.env.MAX_SANDBOX_DURATION || '300', 10)),
   keepAlive: z.boolean().default(false),
   enableBrowser: z.boolean().default(false),
   status: z.enum(['pending', 'processing', 'completed', 'error', 'stopped']).default('pending'),
