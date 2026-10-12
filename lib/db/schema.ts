@@ -84,7 +84,7 @@ export const tasks = pgTable('tasks', {
   selectedAgent: text('selected_agent').default('claude'),
   selectedModel: text('selected_model'),
   installDependencies: boolean('install_dependencies').default(false),
-  maxDuration: integer('max_duration').default(parseInt(process.env.MAX_SANDBOX_DURATION || '300', 10)),
+  maxDuration: integer('max_duration').default(parseIntEnv('MAX_SANDBOX_DURATION', 300)),
   keepAlive: boolean('keep_alive').default(false),
   enableBrowser: boolean('enable_browser').default(false),
   status: text('status', {
@@ -114,6 +114,12 @@ export const tasks = pgTable('tasks', {
 })
 
 // Manual Zod schemas for validation
+function parseIntEnv(key: string, fallback: number): number {
+  const raw = process.env[key];
+  const parsed = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export const insertTaskSchema = z.object({
   id: z.string().optional(),
   userId: z.string().min(1, 'User ID is required'),
@@ -123,7 +129,7 @@ export const insertTaskSchema = z.object({
   selectedAgent: z.enum(['claude', 'codex', 'copilot', 'cursor', 'gemini', 'opencode']).default('claude'),
   selectedModel: z.string().optional(),
   installDependencies: z.boolean().default(false),
-  maxDuration: z.number().default(parseInt(process.env.MAX_SANDBOX_DURATION || '300', 10)),
+  maxDuration: z.number().min(1).max(480).default(parseIntEnv('MAX_SANDBOX_DURATION', 300)),
   keepAlive: z.boolean().default(false),
   enableBrowser: z.boolean().default(false),
   status: z.enum(['pending', 'processing', 'completed', 'error', 'stopped']).default('pending'),
